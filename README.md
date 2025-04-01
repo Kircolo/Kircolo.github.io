@@ -1,2 +1,2 @@
 # Kircolo.github.io
-CSE183 WOrk
+CSE183 Work
