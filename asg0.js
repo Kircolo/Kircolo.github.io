@@ -17,7 +17,7 @@ function main() {
   // new vector #2
   let v1 = new Vector3([0.0, 0.0, 0.0]);
 
-
+  drawVector(v1, 'red'); // Draw the vector in red
 
   // // Draw a blue rectangle
   // ctx.fillStyle = 'rgba(0, 0, 255, 1.0)'; // Set color to blue
