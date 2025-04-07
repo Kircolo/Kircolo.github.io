@@ -55,6 +55,8 @@ function handleDrawEvent() {
   let y2 = parseFloat(document.getElementById("yInput2").value);
 
   let v1 = new Vector3([x1, y1, 0.0]);
+  let v2 = new Vector3([x2, y2, 0.0]);
 
   drawVector(v1, 'red'); // Draw the vector in red
+  drawVector(v2, 'blue'); // Draw the vector in blue
 }
