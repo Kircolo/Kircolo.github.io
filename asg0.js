@@ -14,6 +14,8 @@ function main() {
   ctx.fillStyle = 'black';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+  handleDrawEvent(); // Call the function to draw the vectors
+
   // new vector #2
   // let v1 = new Vector3([2.25, 2.25, 0.0]);
 
