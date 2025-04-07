@@ -54,4 +54,6 @@ function handleDrawEvent() {
   let y1 = parseFloat(document.getElementById("yInput").value);
 
   let v1 = new Vector3([x1, y1, 0.0]);
+
+  drawVector(v1, 'red'); // Draw the vector in red
 }
