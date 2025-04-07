@@ -49,8 +49,8 @@ function handleDrawEvent() {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   //Read the values of the text boxes to create v1
-  let x1 = parseFloat(document.getElementById("xInput").value);
-  let y1 = parseFloat(document.getElementById("yInput").value);
+  let x1 = parseFloat(document.getElementById("xInput1").value);
+  let y1 = parseFloat(document.getElementById("yInput1").value);
   let x2 = parseFloat(document.getElementById("xInput2").value);
   let y2 = parseFloat(document.getElementById("yInput2").value);
 
