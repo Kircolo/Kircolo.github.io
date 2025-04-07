@@ -40,3 +40,18 @@ function drawVector(v, color) {
   ctx.stroke();
 
 }
+
+function handleDrawEvent() {
+  var canvas = document.getElementById('example');
+  var ctx = canvas.getContext('2d');
+
+  //clear the canvas
+  ctx.fillStyle = 'black';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  //Read the values of the text boxes to create v1
+  let x1 = parseFloat(document.getElementById("xInput").value);
+  let y1 = parseFloat(document.getElementById("yInput").value);
+
+  let v1 = new Vector3([x1, y1, 0.0]);
+}
