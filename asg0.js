@@ -15,9 +15,9 @@ function main() {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   // new vector #2
-  let v1 = new Vector3([2.25, 2.25, 0.0]);
+  // let v1 = new Vector3([2.25, 2.25, 0.0]);
 
-  drawVector(v1, 'red'); // Draw the vector in red
+  // drawVector(v1, 'red'); // Draw the vector in red
 
   // // Draw a blue rectangle
   // ctx.fillStyle = 'rgba(0, 0, 255, 1.0)'; // Set color to blue
@@ -38,7 +38,6 @@ function drawVector(v, color) {
   ctx.moveTo(cx, cy);
   ctx.lineTo(cx + (v.elements[0] * 20), cy - (v.elements[1] * 20)); // scale the vector by 20 for visibility
   ctx.stroke();
-
 }
 
 function handleDrawEvent() {
@@ -52,6 +51,8 @@ function handleDrawEvent() {
   //Read the values of the text boxes to create v1
   let x1 = parseFloat(document.getElementById("xInput").value);
   let y1 = parseFloat(document.getElementById("yInput").value);
+  let x2 = parseFloat(document.getElementById("xInput2").value);
+  let y2 = parseFloat(document.getElementById("yInput2").value);
 
   let v1 = new Vector3([x1, y1, 0.0]);
 
