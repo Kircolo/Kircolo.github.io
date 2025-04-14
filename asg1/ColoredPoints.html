@@ -2,11 +2,12 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Change a point color</title>
+    <title>Assignment 1</title>
   </head>
 
   <body onload="main()">
     <img src="triangles.jpg" width="800" height="400"/>
+    The coordinates of the triangles were found with the help of ChatGPT.
     <p>
     <canvas id="webgl" width="400" height="400">
     Please use a browser that supports "canvas"
@@ -14,6 +15,10 @@
     <p>
 
     <p id = "numdot" > XXX </p>
+
+    <p>
+        <strong>Menu:</strong>
+    </p>
 
     <p>
     <button type="button" id="clearButton">Clear</button>
@@ -25,15 +30,26 @@
     <button type = "button" id = "circleButton" > Circle </button>
 
     <p>
-    Red <input type="range" min="0" max="100" value="0" class="slider" id="redSlide">
-    <p>
-    Green <input type="range" min="0" max="100" value="0" class="slider" id="greenSlide">
-    <p>
-    Blue <input type="range" min="0" max="100" value="0" class="slider" id="blueSlide">
+        <strong>Shape Color:</strong>
+    </p>
 
     <p>
-    Size <input type="range" min="5" max="50" value="10" class="slider" id="sizeSlide">
-    Circle Segments <input type="range" min="3" max="30" value="5" class="slider" id="segments">
+    R<input type="range" min="0" max="100" value="0" class="slider" id="redSlide">
+    <p>
+    G<input type="range" min="0" max="100" value="0" class="slider" id="greenSlide">
+    <p>
+    B<input type="range" min="0" max="100" value="0" class="slider" id="blueSlide">
+
+    <p>
+    <p>
+        <strong>Size:</strong>
+    </p>
+    <input type="range" min="5" max="50" value="10" class="slider" id="sizeSlide">
+    <p>
+    <p>
+        <strong>Circle Segments:</strong>
+    </p>
+    <input type="range" min="3" max="30" value="5" class="slider" id="segments">
 
     <script src="lib/webgl-utils.js"></script>
     <script src="lib/webgl-debug.js"></script>
