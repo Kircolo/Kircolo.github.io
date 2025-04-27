@@ -80,16 +80,60 @@ function connectVariablesToGLSL(){
 }
 
 //ui globals & defaults
-let g_globalAngle = 0.0;
 let g_globalAnglex = 0.0;
 let g_globalAngley = 0.0;
+let frontLeftSlider = 0.0;
+let frontRightSlider = 0.0;
+let midLeftSlider = 0.0;
+let midRightSlider = 0.0;
+let backLeftSlider = 0.0;
+let backRightSlider = 0.0;
+let g_frontLeftAnimation = false;
+let g_frontRightAnimation = false;
+let g_midLeftAnimation = false;
+let g_midRightAnimation = false;
+let g_backLeftAnimation = false;
+let g_backRightAnimation = false;
+let g_wingAngle = 0.0;
+let g_wingAnimation = false;
 
 function addActionsForHtmlUI() {
   // Button Events
-  document.getElementById('clearButton').onclick = function() {g_shapesList=[]; renderAllShapes();};
+  document.getElementById('AnimationOn').onclick = function() {
+    g_frontLeftAnimation = true;
+    g_frontRightAnimation = true;
+    g_midLeftAnimation = true;
+    g_midRightAnimation = true;
+    g_backLeftAnimation = true;
+    g_backRightAnimation = true;
+  };
+  document.getElementById('AnimationOff').onclick = function() {
+    g_frontLeftAnimation = false;
+    g_frontRightAnimation = false;
+    g_midLeftAnimation = false;
+    g_midRightAnimation = false;
+    g_backLeftAnimation = false;
+    g_backRightAnimation = false;
+  };
+
+  //shift click
+  function shiftClick(ev) {
+    if(ev.shiftKey) {
+      g_wingAnimation = !g_wingAnimation;
+    }
+  }
+  document.addEventListener("click", shiftClick);
 
   // Slider Events
-  document.getElementById('angleSlide').addEventListener('mousemove', function() { g_globalAngle = this.value; renderAllShapes(); });
+  document.getElementById('angleSlideX').addEventListener('mousemove', function() { g_globalAnglex = this.value; renderAllShapes(); });
+  document.getElementById('angleSlideY').addEventListener('mousemove', function() { g_globalAngley = this.value; renderAllShapes(); });
+
+  document.getElementById('frontLeftSlider').addEventListener('mousemove', function() { frontLeftSlider = this.value; renderAllShapes(); });
+  document.getElementById('frontRightSlider').addEventListener('mousemove', function() { frontRightSlider = this.value; renderAllShapes(); });
+  document.getElementById('midLeftSlider').addEventListener('mousemove', function() { midLeftSlider = this.value; renderAllShapes(); });
+  document.getElementById('midRightSlider').addEventListener('mousemove', function() { midRightSlider = this.value; renderAllShapes(); });
+  document.getElementById('backLeftSlider').addEventListener('mousemove', function() { backLeftSlider = this.value; renderAllShapes(); });
+  document.getElementById('backRightSlider').addEventListener('mousemove', function() { backRightSlider = this.value; renderAllShapes(); });
 }
 
 function main() {
@@ -104,10 +148,27 @@ function main() {
   canvas.onmousemove = function(ev) { if(ev.buttons == 1) { click(ev) } };
 
   // Specify the color for clearing <canvas>
-  gl.clearColor(0.0, 0.0, 0.0, 1.0);
-  renderAllShapes();
+  gl.clearColor(113.0/255, 165.0/255, 250.0/255, 1.0);
+  requestAnimationFrame(tick);
 }
 
+var g_startTime = performance.now()/1000.0;
+var g_seconds = performance.now()/1000.0 - g_startTime;
+
+function tick(){
+  g_seconds = performance.now()/1000.0 - g_startTime;
+  // print some debugging info so we know the program is running
+  console.log(performance.now());
+
+  // Update animation angles
+  updateAnimationAngles();
+
+  //draw the scene
+  renderAllShapes();
+
+  // Tell browser to update again when it has time
+  requestAnimationFrame(tick);
+}
 
 function click(ev) {
   let [x,y] = convertCoordinatesEventToGl(ev);
@@ -127,27 +188,162 @@ function convertCoordinatesEventToGl(ev){
   return([x,y]);
 }
 
+function updateAnimationAngles(){
+  // Update the angles for the legs based on the sliders
+  if (g_frontLeftAnimation) {
+    frontLeftSlider = 30*Math.sin(g_seconds);
+  }
+  if (g_frontRightAnimation) {
+    frontRightSlider = 30*Math.sin(g_seconds);
+  }
+  if (g_midLeftAnimation) {
+    midLeftSlider = 30*Math.sin(g_seconds);
+  }
+  if (g_midRightAnimation) {
+    midRightSlider = 30*Math.sin(g_seconds);
+  }
+  if (g_backLeftAnimation) {
+    backLeftSlider = 30*Math.sin(g_seconds);
+  }
+  if (g_backRightAnimation) {
+    backRightSlider = 30*Math.sin(g_seconds);
+  }
+  if (g_wingAnimation) {
+    // oscillates −30° … +30°  three times per second
+    g_wingAngle = 30 * Math.sin(6 * g_seconds);
+  }
+}
+
 function renderAllShapes(){
   // Check the time at the start of this function
   var startTime = performance.now();
 
   // Pass matrix to u_ModelMatrix attribute
-  var globalRotateMatrix = new Matrix4().rotate(g_globalAngle, 0, 1, 0);
+  var globalRotateMatrix = new Matrix4().rotate(g_globalAnglex, 0, 1, 0);
+  globalRotateMatrix = globalRotateMatrix.rotate(g_globalAngley, 1, 0, 0);
+  // globalRotateMatrix = globalRotateMatrix.rotate(g_globalAngley, 0, 0, 1);
   gl.uniformMatrix4fv(u_GlobalRotateMatrix, false, globalRotateMatrix.elements);
 
   // Clear <canvas>
-  gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  // Draw a test triangle
-  drawTriangle3D( [ -1.0,0.0,0.0,  -0.5,-1.0,0.0,  0.0,0.0,0.0 ] );
+  //set colors & leg positions
+  let YELLOW = [244/255, 208/255, 132/255, 1.0];
+  let BROWN  = [ 87/255,  45/255,  33/255, 1.0];
+  let WING   = [221/255, 222/255, 214/255, 0.6];
+  let BLACK = [0.0, 0.0, 0.0, 1.0];
+  let BLUE = [ 87/255, 145/255, 152/255, 1.0];
 
-  // Draw a cube
+  //body
   var body = new Cube();
-  body.color = [1.0, 0.0, 0.0, 1.0];
-  body.matrix.setTranslate(-.25, -.5, 0.0);
-  body.matrix.rotate(g_globalAnglex, 1, 0, 0);
-  body.matrix.scale(.5, 1, .5);
+  body.color = YELLOW;
+  body.matrix.translate(-0.30, -0.05, -0.17);
+  body.matrix.scale(0.60, 0.35, 0.35);
   body.render();
+
+  //legs
+  var frontLeftLeg = new Cube();
+  frontLeftLeg.color = BROWN;
+  frontLeftLeg.matrix.translate( 0.20, -0.14,  0.08);
+  frontLeftLeg.matrix.rotate(frontLeftSlider, 0, 0, 1);
+  frontLeftLeg.matrix.scale(0.05, 0.12, 0.05);
+  frontLeftLeg.render();
+
+  var frontRightLeg = new Cube();
+  frontRightLeg.color = BROWN;
+  frontRightLeg.matrix.translate( 0.20, -0.14, -0.13);
+  frontRightLeg.matrix.rotate(frontRightSlider, 0, 0, 1);
+  frontRightLeg.matrix.scale(0.05, 0.12, 0.05);
+  frontRightLeg.render();
+
+  var midLeftLeg = new Cube();
+  midLeftLeg.color = BROWN;
+  midLeftLeg.matrix.translate( 0.00, -0.14,  0.08);
+  midLeftLeg.matrix.rotate(midLeftSlider, 0, 0, 1);
+  midLeftLeg.matrix.scale(0.05, 0.12, 0.05);
+  midLeftLeg.render();
+
+  var midRightLeg = new Cube();
+  midRightLeg.color = BROWN;
+  midRightLeg.matrix.translate( 0.00, -0.14, -0.13);
+  midRightLeg.matrix.rotate(midRightSlider, 0, 0, 1);
+  midRightLeg.matrix.scale(0.05, 0.12, 0.05);
+  midRightLeg.render();
+
+  var backRightLeg = new Cube();
+  backRightLeg.color = BROWN;
+  backRightLeg.matrix.translate(-0.20, -0.14, -0.13);
+  backRightLeg.matrix.rotate(backRightSlider, 0, 0, 1);
+  backRightLeg.matrix.scale(0.05, 0.12, 0.05);
+  backRightLeg.render();
+
+  var backLeftLeg = new Cube();
+  backLeftLeg.color = BROWN;
+  backLeftLeg.matrix.translate(-0.20, -0.14,  0.08);
+  backLeftLeg.matrix.rotate(backLeftSlider, 0, 0, 1);
+  backLeftLeg.matrix.scale(0.05, 0.12, 0.05);
+  backLeftLeg.render();
+
+  //wings
+  // var left = new Cube();
+  // left.color = WING;
+  // left.matrix.translate(-0.10, 0.3, -0.23);
+  // left.matrix.rotate(25, 10, -50, 0);
+  // left.matrix.scale(0.30, 0.02, 0.125);
+  // left.render();
+
+  // var right = new Cube();
+  // right.color = WING;
+  // right.matrix.translate(-0.10, 0.3,  0.1);
+  // right.matrix.rotate(15, 10, 50, 0);
+  
+  // right.matrix.scale(0.30, 0.02, 0.125);
+  // right.render();
+  const WING_W = 0.30, WING_T = 0.02, WING_D = 0.125;
+  const HINGE_Y = 0.30;     // body roof (see earlier calc)
+  const HINGE_Z = 0.18;     // distance from centreline to body edge
+
+  // helper — builds one wing given zSide = −1 (left) or +1 (right)
+  function buildWing(zSide) {
+    const wing = new Cube();
+    wing.color = WING;
+
+    // 1. move to roof hinge
+    wing.matrix.translate(0.0, HINGE_Y, 0.0);
+    // 2. slide sideways to edge
+    wing.matrix.translate(0.0, 0.0, HINGE_Z * zSide);
+    // 3. apply flap rotation (about X-axis); mirror sign per side
+    wing.matrix.rotate(g_wingAngle * -zSide, 1, 0, 0);
+    // 4. scale to slab
+    wing.matrix.scale(WING_W, WING_T, WING_D);
+    wing.render();
+  }
+
+  buildWing(-1);   // left
+  buildWing( 0.3);   // right
+
+  //eyes
+  var leftEyeBase = new Cube();
+  leftEyeBase.color = BLACK;
+  leftEyeBase.matrix.translate(0.25, 0.02, -0.171);
+  leftEyeBase.matrix.scale(0.07, 0.15, 0.12);
+  leftEyeBase.render();
+  var leftEyeIris = new Cube();
+  leftEyeIris.color = BLUE;
+  leftEyeIris.matrix.translate(0.3, 0.09, -0.1);
+  leftEyeIris.matrix.scale(0.022, 0.08, 0.05);
+  leftEyeIris.render();
+  
+  var rightEyeBase = new Cube();
+  rightEyeBase.color = BLACK;
+  rightEyeBase.matrix.translate(0.25, 0.02, 0.067);
+  rightEyeBase.matrix.scale(0.07, 0.15, 0.12);
+  rightEyeBase.render();
+  var rightEyeIris = new Cube();
+  rightEyeIris.color = BLUE;
+  rightEyeIris.matrix.translate(0.30, 0.09, 0.07);
+  rightEyeIris.matrix.scale(0.022, 0.08, 0.05);
+  rightEyeIris.render();
 
   // Check the time at the end of the function, and show on web page
   var duration = performance.now() - startTime;

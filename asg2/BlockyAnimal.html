@@ -6,23 +6,42 @@
   </head>
 
   <body onload="main()">
-    <canvas id="webgl" width="600" height="600">
-    Please use a browser that supports "canvas"
-    </canvas>
+    <div class="row">
+      <div class="column">
+        <canvas id="webgl" width="600" height="600">
+          Please use a browser that supports "canvas"
+        </canvas>
+      </div>
+    </div>
+    
     <p>
 
     <p id = "numdot" > XXX </p>
+    
+    <div class="row">
+      <div class="column">
+        <p>
+          <strong>Controls:</strong>
+        </p> 
+        <p>
+          X Camera Angle <input type="range" min="0" max="360" value="15" class="slider" id="angleSlideX">
+        <p>
+          Y Camera Angle <input type="range" min="0" max="360" value="15" class="slider" id="angleSlideY">
+
+        <p> Front Left Leg <input type="range" min="-30" max="45" value="0" class="slider" id="frontLeftSlider"></p>
+        <p> Front Right Leg <input type="range" min="-30" max="45" value="0" class="slider" id="frontRightSlider"></p>
+        <p> Middle Left Leg <input type="range" min="-30" max="45" value="0" class="slider" id="midLeftSlider"></p>
+        <p> Middle Right Leg <input type="range" min="-30" max="45" value="0" class="slider" id="midRightSlider"></p>
+        <p> Back Left Leg <input type="range" min="-30" max="45" value="0" class="slider" id="backLeftSlider"></p>
+        <p> Back Right Leg <input type="range" min="-30" max="45" value="0" class="slider" id="backRightSlider"></p>
+      </div>
+    </div>
+
+    
 
     <p>
-      Camera Angle <input type="range" min="0" max="360" value="15" class="slider" id="angleSlide">
-    </p>
-
-    <p>
-        <strong>Menu:</strong>
-    </p>
-
-    <p>
-    <button type="button" id="clearButton">Clear</button>
+    <button type="button" id="AnimationOn">On</button>
+    <button type="button" id="AnimationOff">Off</button>
 
     <script src="lib/webgl-utils.js"></script>
     <script src="lib/webgl-debug.js"></script>
