@@ -105,7 +105,7 @@ function main() {
 
 
 function click(ev) {
-  let [x,y] = convertCoordinatesEventToGL(ev);
+  let [x,y] = convertCoordinatesEventToGl(ev);
   g_globalAnglex = x * 100;
   g_globalAngley = y * 100;
   renderAllShapes();
