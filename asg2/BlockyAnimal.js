@@ -103,15 +103,10 @@ function addActionsForHtmlUI() {
 }
 
 function main() {
-  // Retrieve <canvas> element
-  var canvas = document.getElementById('webgl');
-
   // Get the rendering context for WebGL
   setupWebGL();
-
   // Set up GLSL programs and connect variables to GLSL
   connectVariablesToGLSL();
-
   addActionsForHtmlUI();
 
   // Register function (event handler) to be called on a mouse press
@@ -120,35 +115,17 @@ function main() {
 
   // Specify the color for clearing <canvas>
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
-
-  // Clear <canvas>
-  gl.clear(gl.COLOR_BUFFER_BIT);
+  renderShapes();
 }
 
 var g_shapesList = [];
 
 function click(ev) {
-  //extract the event click and return  it in webgl coordinates
-  [x,y] = convertCoordinatesEventToGl(ev);
+  let [x,y] = conversion(ev);
 
-  // create and store the new point
-  let point;
-  if (g_selectedType == POINT) {
-    point = new Point();
-  } else if (g_selectedType == TRIANGLE) {
-    point = new Triangle();
-  } else {
-    point = new Circle();
-    point.segments = g_segments;
-  }
-
-  point.position = [x,y];
-  point.color = g_selectedColor.slice();
-  point.size = g_selectedSize;
-  g_shapesList.push(point);
-
-  // draw all shapes supposed to be on the canvas
-  renderAllShapes();
+  g_globalAngle = y * 100;
+  g_globalAnglex = x *100;
+  renderShapes();
 }
 
 function convertCoordinatesEventToGl(ev){
@@ -163,30 +140,31 @@ function convertCoordinatesEventToGl(ev){
 }
 
 function renderAllShapes(){
-
-  //Check the start time of the function
+  // Check the time at the start of this function
   var startTime = performance.now();
 
-  //clear the canvas
+  // Clear <canvas>
   gl.clear(gl.COLOR_BUFFER_BIT);
 
-  //draw all shapes in the list
-  var len = g_shapesList.length;
-  for (let i = 0; i < len; i++){
-    g_shapesList[i].render();
-  }
+  // Draw a test triangle
+  drawTriangle3D( [ -1.0,0.0,0.0,  -0.5,-1.0,0.0,  0.0,0.0,0.0 ] );
 
-  // Check the end time of the function and show on web
+  // Draw a cube
+  var body = new Cube();
+  body.color = [1.0,0.0,0.0,1.0];
+  body.render();
+
+  // Check the time at the end of the function, and show on web page
   var duration = performance.now() - startTime;
-  sendTextToHTML("numdot: " + len + " ms: " + Math.floor(duration) + " fps: " + Math.floor(10000/duration)/10, "numdot");
+  sendTextToHTML( " ms: " + Math.floor(duration) + " fps: " + Math.floor(10000/duration) );
 }
 
-// Set the text of an HTML element
+// Set the text of a HTML element
 function sendTextToHTML(text, htmlID) {
   var htmlElm = document.getElementById(htmlID);
-  if (!htmlElm){
-    console.log("Failed to get " + htmlID + " from HTML");
-    return;
+  if (!htmlElm) {
+      console.log("Failed to get " + htmlID + " from HTML");
+      return;
   }
   htmlElm.innerHTML = text;
 }
