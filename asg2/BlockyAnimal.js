@@ -1,20 +1,20 @@
 // ColoredPoint.js (c) 2012 matsuda
 // Vertex shader program
-var VSHADER_SOURCE =
-  'attribute vec4 a_Position;\n' +
-  'uniform float u_Size;\n' +
-  'void main() {\n' +
-  '  gl_Position = a_Position;\n' +
-  '  gl_PointSize = u_Size;\n' +
-  '}\n';
+var VSHADER_SOURCE =`
+  attribute vec4 a_Position;
+  uniform mat4 u_ModelMatrix;
+  uniform mat4 u_GlobalRotateMatrix;
+  void main() {
+    gl_Position = u_GlobalRotateMatrix * u_ModelMatrix * a_Position;
+  }`
 
 // Fragment shader program
-var FSHADER_SOURCE =
-  'precision mediump float;\n' +
-  'uniform vec4 u_FragColor;\n' +
-  'void main() {\n' +
-  '  gl_FragColor = u_FragColor;\n' +
-  '}\n';
+var FSHADER_SOURCE =`
+  precision mediump float;
+  uniform vec4 u_FragColor;
+  void main() {
+    gl_FragColor = u_FragColor;
+  }`
 
 //globals
 let canvas;
@@ -22,6 +22,8 @@ let gl;
 let a_Position;
 let u_FragColor;
 let u_Size;
+let u_ModelMatrix;
+let u_GlobalRotateMatrix;
 
 function setupWebGL(){
   // Retrieve <canvas> element
@@ -67,11 +69,6 @@ function connectVariablesToGLSL(){
   var identityM = new Matrix4();
   gl.uniformMatrix4fv(u_ModelMatrix, false, identityM.elements);
 }
-
-//def shapes
-const POINT = 1;
-const TRIANGLE = 2;
-const CIRCLE = 3;
 
 //ui globals & defaults
 let g_selectedColor = [1.0, 1.0, 1.0, 1.0];
