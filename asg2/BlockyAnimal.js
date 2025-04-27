@@ -156,7 +156,7 @@ function renderAllShapes(){
 
   // Check the time at the end of the function, and show on web page
   var duration = performance.now() - startTime;
-  sendTextToHTML( " ms: " + Math.floor(duration) + " fps: " + Math.floor(10000/duration) );
+  sendTextToHTML( " ms: " + Math.floor(duration) + " fps: " + Math.floor(10000/duration), "numdot" );
 }
 
 // Set the text of a HTML element
