@@ -80,7 +80,4 @@ function drawTriangle3D(vertices) {
 
     // Draw
     gl.drawArrays(gl.TRIANGLES, 0, n);
-
-    // Draw vertices of the triangle
-    //gl.drawArrays(gl.POINTS,0,n);
 }
