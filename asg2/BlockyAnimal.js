@@ -34,7 +34,9 @@ function setupWebGL(){
   if (!gl) {
     console.log('Failed to get the rendering context for WebGL');
     return;
-  }  
+  }
+
+  gl.enable(gl.DEPTH_TEST);
 }
 
 function connectVariablesToGLSL(){
@@ -78,13 +80,16 @@ function connectVariablesToGLSL(){
 }
 
 //ui globals & defaults
+let g_globalAngle = 0.0;
 let g_globalAnglex = 0.0;
 let g_globalAngley = 0.0;
 
 function addActionsForHtmlUI() {
   // Button Events
-
   document.getElementById('clearButton').onclick = function() {g_shapesList=[]; renderAllShapes();};
+
+  // Slider Events
+  document.getElementById('angleSlide').addEventListener('mousemove', function() { g_globalAngle = this.value; renderAllShapes(); });
 }
 
 function main() {
@@ -125,6 +130,10 @@ function convertCoordinatesEventToGl(ev){
 function renderAllShapes(){
   // Check the time at the start of this function
   var startTime = performance.now();
+
+  // Pass matrix to u_ModelMatrix attribute
+  var globalRotateMatrix = new Matrix4().rotate(g_globalAngle, 0, 1, 0);
+  gl.uniformMatrix4fv(u_GlobalRotateMatrix, false, globalRotateMatrix.elements);
 
   // Clear <canvas>
   gl.clear(gl.COLOR_BUFFER_BIT);
