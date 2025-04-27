@@ -115,7 +115,7 @@ function main() {
 
   // Specify the color for clearing <canvas>
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
-  renderShapes();
+  renderAllShapes();
 }
 
 var g_shapesList = [];
@@ -125,7 +125,7 @@ function click(ev) {
 
   g_globalAngle = y * 100;
   g_globalAnglex = x *100;
-  renderShapes();
+  renderAllShapes();
 }
 
 function convertCoordinatesEventToGl(ev){
@@ -156,7 +156,7 @@ function renderAllShapes(){
 
   // Check the time at the end of the function, and show on web page
   var duration = performance.now() - startTime;
-  sendTextToHTML( " ms: " + Math.floor(duration) + " fps: " + Math.floor(10000/duration), "numdot" );
+  sendTextToHTML( "ms: " + Math.floor(duration) + " fps: " + Math.floor(10000/duration), "numdot" );
 }
 
 // Set the text of a HTML element
