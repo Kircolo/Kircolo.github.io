@@ -85,7 +85,6 @@ function addActionsForHtmlUI() {
   // Button Events
 
   document.getElementById('clearButton').onclick = function() {g_shapesList=[]; renderAllShapes();};
-  document.getElementById('drawingButton').onclick = function() {drawPicture();};
 }
 
 function main() {
@@ -106,7 +105,7 @@ function main() {
 
 
 function click(ev) {
-  let [x,y] = conversion(ev);
+  let [x,y] = convertCoordinatesEventToGL(ev);
   g_globalAnglex = x * 100;
   g_globalAngley = y * 100;
   renderAllShapes();
