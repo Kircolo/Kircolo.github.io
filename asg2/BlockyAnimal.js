@@ -80,26 +80,7 @@ function addActionsForHtmlUI() {
   // Button Events
 
   document.getElementById('clearButton').onclick = function() {g_shapesList=[]; renderAllShapes();};
-  document.getElementById('pointButton').onclick = function() {g_selectedType = POINT;};
-  document.getElementById('triButton').onclick = function() {g_selectedType = TRIANGLE;};
-  document.getElementById('circleButton').onclick = function() {g_selectedType = CIRCLE;};
   document.getElementById('drawingButton').onclick = function() {drawPicture();};
-
-  // Color Slider Events
-  document.getElementById('redSlide').value = g_selectedColor[0] * 1; // default
-  document.getElementById('greenSlide').value = g_selectedColor[1] * 1;
-  document.getElementById('blueSlide').value = g_selectedColor[2] * 1;
-  g_selectedColor[0] = document.getElementById('redSlide').value / 100;
-  g_selectedColor[1] = document.getElementById('greenSlide').value / 100;
-  g_selectedColor[2] = document.getElementById('blueSlide').value / 100;
-
-  document.getElementById('redSlide').addEventListener('mouseup', function() {g_selectedColor[0] = this.value/100; });
-  document.getElementById('greenSlide').addEventListener('mouseup', function() {g_selectedColor[1] = this.value/100; });
-  document.getElementById('blueSlide').addEventListener('mouseup', function() {g_selectedColor[2] = this.value/100; });
-
-  // Size Slider Events
-  document.getElementById('sizeSlide').addEventListener('mouseup', function() {g_selectedSize = this.value; });
-  document.getElementById('segments').addEventListener('mouseup', function() {g_segments = this.value; });
 }
 
 function main() {
@@ -118,13 +99,13 @@ function main() {
   renderAllShapes();
 }
 
-var g_shapesList = [];
+let g_globalAnglex = 0.0;
+let g_globalAngley = 0.0;
 
 function click(ev) {
   let [x,y] = conversion(ev);
-
-  g_globalAngle = y * 100;
-  g_globalAnglex = x *100;
+  g_globalAnglex = x * 100;
+  g_globalAngley = y * 100;
   renderAllShapes();
 }
 
