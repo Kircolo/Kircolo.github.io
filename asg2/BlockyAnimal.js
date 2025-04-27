@@ -78,10 +78,8 @@ function connectVariablesToGLSL(){
 }
 
 //ui globals & defaults
-let g_selectedColor = [1.0, 1.0, 1.0, 1.0];
-let g_selectedSize = 10
-let g_segments = 5;
-let g_selectedType = POINT; //default to point
+let g_globalAnglex = 0.0;
+let g_globalAngley = 0.0;
 
 function addActionsForHtmlUI() {
   // Button Events
@@ -106,8 +104,6 @@ function main() {
   renderAllShapes();
 }
 
-let g_globalAnglex = 0.0;
-let g_globalAngley = 0.0;
 
 function click(ev) {
   let [x,y] = conversion(ev);
