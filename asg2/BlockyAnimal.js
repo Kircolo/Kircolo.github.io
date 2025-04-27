@@ -36,7 +36,6 @@ function setupWebGL(){
 }
 
 function connectVariablesToGLSL(){
-  
   // Initialize shaders
   if (!initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)) {
     console.log('Failed to intialize shaders.');
@@ -57,12 +56,16 @@ function connectVariablesToGLSL(){
     return;
   }
 
-  // Get the storage location of u_Size
-  u_Size = gl.getUniformLocation(gl.program, 'u_Size');
-  if (!u_Size) {
-    console.log('Failed to get the storage location of u_Size');
+  // Get the storage location of u_ModelMatrix
+  u_ModelMatrix = gl.getUniformLocation(gl.program, 'u_ModelMatrix');
+  if (!u_ModelMatrix) {
+    console.log('Failed to get the storage location of u_ModelMatrix');
     return;
   }
+
+  // Set an initial value for this matrix to identity
+  var identityM = new Matrix4();
+  gl.uniformMatrix4fv(u_ModelMatrix, false, identityM.elements);
 }
 
 //def shapes
@@ -151,7 +154,9 @@ function renderAllShapes(){
 
   // Draw a cube
   var body = new Cube();
-  body.color = [1.0,0.0,0.0,1.0];
+  body.color = [1.0, 0.0, 0.0, 1.0];
+  body.matrix.translate(-.25, -.5, 0.0);
+  body.matrix.scale(.5, 1, .5);
   body.render();
 
   // Check the time at the end of the function, and show on web page
