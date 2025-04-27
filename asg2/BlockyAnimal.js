@@ -133,7 +133,8 @@ function renderAllShapes(){
   // Draw a cube
   var body = new Cube();
   body.color = [1.0, 0.0, 0.0, 1.0];
-  body.matrix.translate(-.25, -.5, 0.0);
+  body.matrix.setTranslate(-.25, -.5, 0.0);
+  body.matrix.rotate(g_globalAnglex, 1, 0, 0);
   body.matrix.scale(.5, 1, .5);
   body.render();
 
@@ -150,68 +151,4 @@ function sendTextToHTML(text, htmlID) {
       return;
   }
   htmlElm.innerHTML = text;
-}
-
-// draw a mountain! | USED CHATGPT FOR HELP IN FINDING THE COORDINATES AND COLORS |
-function drawPicture() {
-  const white      = [1.0, 1.0, 1.0, 1.0];
-  const lightBlue  = [0.3, 0.6, 1.0, 1.0];
-  const mediumBlue = [0.2, 0.4, 0.75, 1.0];
-  const darkBlue   = [0.1, 0.2, 0.5, 1.0];
-  const backgroundColor = [0.6, 0.8, 1.0, 1.0]; // light sky blue
-
-  // Background color (sky blue-ish)
-  gl.uniform4f(u_FragColor, ...backgroundColor);
- // Top-left rectangle (split into 2 triangles)
- drawTriangle([-1.0, 1.0, -1.0, 0.0,  0.0, 1.0]); // top-left
- drawTriangle([-1.0, 0.0,  0.0, 0.0,  0.0, 1.0]); // bottom-right of top-left quad
-
- // Bottom-left rectangle
- drawTriangle([-1.0, 0.0, -1.0, -1.0, 0.0, -1.0]);
- drawTriangle([-1.0, 0.0,  0.0, -1.0, 0.0, 0.0]);
-
- // Top-right rectangle
- drawTriangle([0.0, 1.0,  0.0, 0.0, 1.0, 1.0]);
- drawTriangle([0.0, 0.0,  1.0, 0.0, 1.0, 1.0]);
-
- // Bottom-right rectangle
- drawTriangle([0.0, 0.0, 0.0, -1.0, 1.0, -1.0]);
- drawTriangle([0.0, 0.0, 1.0, -1.0, 1.0, 0.0]);
-  
-  // White
-
-  gl.uniform4f(u_FragColor, ...white);
-
-  drawTriangle([  0.0,  0.85,   -0.2, 0.45,   0.0,  0.45 ]);  // #1
-  drawTriangle([  0.0,  0.85,    0.0, 0.45,  -0.1,  0.45 ]);  // #2 (small horizontal fix)
-  drawTriangle([  0.0,  0.85,    0.0, 0.45,   0.2,  0.45 ]);  // #3
-  drawTriangle([  0.0,  0.85,    0.2, 0.45,   0.1,  0.45 ]);  // #4 (a little overlap fix)
-
-  // Light Blue
-
-  gl.uniform4f(u_FragColor, ...lightBlue);
-
-  drawTriangle([ -0.2, 0.45,  -0.4,  0.1,   0.0, 0.1 ]);    // #5
-  drawTriangle([ -0.2, 0.45,   0.0,  0.1,   0.0, 0.45 ]);   // #6
-  drawTriangle([  0.0, 0.45,   0.0,  0.1,   0.4, 0.1 ]);    // #7
-  drawTriangle([  0.0, 0.45,   0.4,  0.1,   0.2, 0.45 ]);   // #8
-
-  // Medium Blue
-
-  gl.uniform4f(u_FragColor, ...mediumBlue);
-
-
-  drawTriangle([ -0.4,  0.1,  -0.6, -0.2,   0.0, -0.2 ]);   // #9
-  drawTriangle([ -0.4,  0.1,   0.0, -0.2,   0.0,  0.1 ]);   // #10
-  drawTriangle([  0.0,  0.1,   0.0, -0.2,   0.6, -0.2 ]);   // #11
-  drawTriangle([  0.0,  0.1,   0.6, -0.2,   0.4,  0.1 ]);   // #12
-
-  // Dark Blue
-
-  gl.uniform4f(u_FragColor, ...darkBlue);
-
-  drawTriangle([ -0.6, -0.2,  -0.8, -0.8,   0.0, -0.8 ]);   // #13
-  drawTriangle([ -0.6, -0.2,   0.0, -0.8,   0.0, -0.2 ]);   // #14
-  drawTriangle([  0.0, -0.2,   0.0, -0.8,   0.8, -0.8 ]);   // #15
-  drawTriangle([  0.0, -0.2,   0.8, -0.8,   0.6, -0.2 ]);   // #16
 }
