@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Assignment 3</title>
+  </head>
+
+  <body onload="main()">
+    <div class="row">
+      <div class="column">
+        <canvas id="webgl" width="600" height="600">
+          Please use a browser that supports "canvas"
+        </canvas>
+      </div>
+    </div>
+    
+    <p>
+
+    <p id = "numdot" > XXX </p>
+    
+    <div class="row">
+      <div class="column">
+        <p>
+          <strong>Controls:</strong>
+        </p> 
+        <p>
+          X Camera Angle <input type="range" min="0" max="360" value="15" class="slider" id="angleSlideX">
+        <p>
+          Y Camera Angle <input type="range" min="0" max="360" value="15" class="slider" id="angleSlideY">
+      </div>
+    </div>
+
+    <p>
+    Animation:
+    <button type="button" id="AnimationOn">On</button>
+    <button type="button" id="AnimationOff">Off</button>
+
+    <script src="lib/webgl-utils.js"></script>
+    <script src="lib/webgl-debug.js"></script>
+    <script src="lib/cuon-utils.js"></script>
+    <script src="lib/cuon-matrix.js"></script>
+    <script src="Triangle.js"></script>
+    <script src="Camera.js"></script>
+    <script src="Circle.js"></script>
+    <script src="Cube.js"></script>
+    <script src="World.js"></script>
+  </body>
+</html>
