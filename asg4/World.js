@@ -7,14 +7,18 @@ var VSHADER_SOURCE =`
   attribute vec3 a_Normal;
   varying vec2 v_UV;
   varying vec3 v_Normal;
+  varying vec4 v_VertPos;
   uniform mat4 u_ModelMatrix;
+  uniform mat4 u_NormalMatrix;
   uniform mat4 u_GlobalRotateMatrix;
   uniform mat4 u_ViewMatrix;
   uniform mat4 u_ProjectionMatrix;
   void main() {
     gl_Position = u_ProjectionMatrix * u_ViewMatrix * u_GlobalRotateMatrix * u_ModelMatrix * a_Position;
     v_UV = a_UV;
-    v_Normal = a_Normal;
+    // v_Normal = a_Normal; // temp
+    v_Normal = normalize(vec3(u_NormalMatrix * vec4(a_Normal, 1)));
+    v_VertPos = u_ModelMatrix * a_Position;
   }`
 
 var FSHADER_SOURCE = `
@@ -32,7 +36,13 @@ var FSHADER_SOURCE = `
   uniform sampler2D u_Sampler7;
   //uniform sampler2D u_Sampler;
   uniform int u_whichTexture;
+  uniform vec3 u_lightPos;
+  uniform vec3 u_cameraPos;
+  varying vec4 v_VertPos;
+  uniform bool u_lightOn;
+
   void main() {
+
     if(u_whichTexture == -3) {
       gl_FragColor = vec4((v_Normal+1.0) / 2.0, 1.0); // use normal
     }
@@ -69,6 +79,36 @@ var FSHADER_SOURCE = `
     else {
       gl_FragColor = vec4(1,.2,.2,1);             // ERROR; use reddish
     }
+
+    vec3 lightVector = u_lightPos - vec3(v_VertPos);
+    float r = length(lightVector);
+
+    // N dot L
+    vec3 L = normalize(lightVector);
+    vec3 N = normalize(v_Normal);
+    float nDotL = max(dot(N, L), 0.0);
+
+    // Reflection
+    vec3 R = reflect(-L, N);
+
+    // Eye
+    vec3 E = normalize(u_cameraPos - vec3(v_VertPos));
+
+    // Specular
+    float specular = pow(max(dot(R, E), 0.0), 64.0) * 0.8;
+
+    vec3 diffuse = vec3(1.0, 1.0, 0.9) * vec3(gl_FragColor) * nDotL * 0.7;
+    vec3 ambient = vec3(gl_FragColor) * 0.2;
+
+    if(u_lightOn) {
+      if(u_whichTexture != 0 && u_whichTexture != 1 && u_whichTexture != 2 && u_whichTexture != 6) {
+        gl_FragColor = vec4(diffuse + ambient + specular, 1.0);
+      }
+      else {
+        gl_FragColor = vec4(diffuse + ambient, 1.0);
+      }
+    }
+
   }`
 
 // globals
@@ -93,6 +133,11 @@ let u_Sampler4;
 let u_Sampler5;
 let u_Sampler6;
 let u_Sampler7;
+let u_lightPos;
+let u_cameraPos;
+let u_lightOn;
+let u_NormalMatrix;
+
 let g_camera = new Camera();
 function setupWebGL(){
   // Retrieve <canvas> element
@@ -140,6 +185,27 @@ function connectVariablesToGLSL(){
     return;
   }
 
+  // Get the storage location of u_lightPos
+  u_lightPos = gl.getUniformLocation(gl.program, 'u_lightPos');
+  if (!u_lightPos) {
+    console.log('Failed to get the storage location of u_lightPos');
+    return;
+  }
+
+  // Get the storage location of u_cameraPos
+  u_cameraPos = gl.getUniformLocation(gl.program, 'u_cameraPos');
+  if (!u_cameraPos) {
+    console.log('Failed to get the storage location of u_cameraPos');
+    return;
+  }
+
+  // Get the storage location of u_lightOn
+  u_lightOn = gl.getUniformLocation(gl.program, 'u_lightOn');
+  if (!u_lightOn) {
+    console.log('Failed to get the storage location of u_lightOn');
+    return;
+  }
+
   // Get the storage location of u_ProjectionMatrix
   u_ProjectionMatrix = gl.getUniformLocation(gl.program, 'u_ProjectionMatrix');
   if (!u_ProjectionMatrix) {
@@ -159,6 +225,14 @@ function connectVariablesToGLSL(){
     console.log('Failed to get the storage location of u_ModelMatrix');
     return;
   }
+
+  // Get the storage location of u_NormalMatrix
+  u_NormalMatrix = gl.getUniformLocation(gl.program, 'u_NormalMatrix');
+  if (!u_NormalMatrix) {
+    console.log('Failed to get the storage location of u_NormalMatrix');
+    return;
+  }
+
   // Get the storage location of u_GlobalRotateMatrix
   u_GlobalRotateMatrix = gl.getUniformLocation(gl.program, 'u_GlobalRotateMatrix');
   if (!u_GlobalRotateMatrix) {
@@ -438,12 +512,33 @@ let g_backRightAnimation = false;
 let g_wingAngle = 0.0;
 let g_wingAnimation = false;
 let g_normalOn = false;
+let g_lightPos = [0, 1, -2]; // default light position
+let g_magentaAnimation = false;
+let g_yellowAnimation = false;
+let g_yellowAngle = 0.0;
+let g_magentaAngle = 0.0;
+let g_lightOn = true;
 
 function addActionsForHtmlUI() {
   // Button Events
   document.getElementById('normalOn').onclick = function() {g_normalOn = true;};
   document.getElementById('normalOff').onclick = function() {g_normalOn = false;};
+  document.getElementById('AnimationMagentaOn').onclick = function() { g_magentaAnimation = true; };
+  document.getElementById('AnimationMagentaOff').onclick = function() { g_magentaAnimation = false; };
+  document.getElementById('AnimationYellowOn').onclick = function() { g_yellowAnimation = true; };
+  document.getElementById('AnimationYellowOff').onclick = function() { g_yellowAnimation = false; };
+  document.getElementById('lightOn').onclick = function() { g_lightOn = true; };
+  document.getElementById('lightOff').onclick = function() { g_lightOn = false; };
 
+  // Color Slider Events
+  document.getElementById('magentaSlide').addEventListener('mousemove', function(ev) { if(ev.buttons == 1) { g_magentaAngle = this.value; renderAllShapes(); } });
+  document.getElementById('yellowSlide').addEventListener('mousemove', function(ev) { if(ev.buttons == 1) { g_yellowAngle = this.value; renderAllShapes(); } });
+  document.getElementById('lightSlideX').addEventListener('mousemove', function() { g_lightPos[0] = this.value/100; renderAllShapes(); });
+  document.getElementById('lightSlideY').addEventListener('mousemove', function() { g_lightPos[1] = this.value/100; renderAllShapes(); });
+  document.getElementById('lightSlideZ').addEventListener('mousemove', function() { g_lightPos[2] = this.value/100; renderAllShapes(); });
+  
+
+  // Animations
   document.getElementById('AnimationOn').onclick = function() {
     g_frontLeftAnimation = true;
     g_frontRightAnimation = true;
@@ -473,8 +568,6 @@ function addActionsForHtmlUI() {
   document.getElementById('angleSlideX').addEventListener('mousemove', function() { g_globalAnglex = this.value; renderAllShapes(); });
   document.getElementById('angleSlideY').addEventListener('mousemove', function() { g_globalAngley = this.value; renderAllShapes(); });
 }
-
-
 
 function main() {
   // Get the rendering context for WebGL
@@ -564,6 +657,9 @@ function keydown(ev) {
 }
 
 function updateAnimationAngles(){
+  // Move the light
+  g_lightPos[0] = Math.cos(g_seconds);
+
   // Update the angles for the legs based on the sliders
   if (g_frontLeftAnimation) {
     frontLeftSlider = 30*Math.sin(g_seconds);
@@ -591,15 +687,14 @@ function updateAnimationAngles(){
 
 
 let g_map = [
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,0,0,0,2,0,0,0,0,0,0,0,0,0,0,1],
-  [1,0,2,0,0,0,0,2,0,0,0,0,0,0,0,1],
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+  [1,1,1,1,1,1,1,1,1,1],
+  [1,0,3,4,4,0,0,0,0,1],
+  [1,0,0,2,0,4,6,0,0,1],
+  [1,2,3,3,0,0,0,0,0,1],
+  [1,0,0,2,0,7,0,0,0,1],
+  [1,0,0,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,0,0,1],
+  [1,1,1,1,1,1,1,1,1,1]
 ];
 
 function convertCoordinatesEventToGl(ev){
@@ -628,6 +723,7 @@ function drawMap() {
           cube.matrix.setIdentity();
           cube.matrix.translate(x-4, z - 0.75, y-4);
           cube.matrix.scale(1, 1, 1);
+          cube.normalMatrix.setInverseOf(cube.matrix).transpose();
           cube.render();
         }
       }
@@ -715,15 +811,44 @@ function renderAllShapes(){
 
   // Clear <canvas>
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  gl.clear(gl.COLOR_BUFFER_BIT);
 
   skyboxAndFloor(); // make skybox and floor
   drawMap(); // make walls
   
-  bee(); // make bee
+  var b1 = new bee(); // make bee
 
+  // Pass the light position to GLSL
+  gl.uniform3f(u_lightPos, g_lightPos[0], g_lightPos[1], g_lightPos[2]);
+
+  // Pass the camera position to GLSL
+  gl.uniform3f(u_cameraPos, g_camera.eye.elements[0], g_camera.eye.elements[1], g_camera.eye.elements[2]);
+  
+  // Pass the light on/off to GLSL
+  gl.uniform1i(u_lightOn, g_lightOn);
+
+  // Draw the light
+  var light = new Cube();
+  light.textureNum = -2;
+  light.color = [2, 2, 0, 1];
+  light.matrix.translate(g_lightPos[0], g_lightPos[1], g_lightPos[2]);
+  light.matrix.scale(-0.1, -0.1, -0.1);
+  light.matrix.translate(-0.5, -0.5, -0.5); // center the light cube
+  light.render();
+
+  // test sphere
+  var test = new Sphere();
+  test.color = [1.0, 0.0, 0.0, 1.0];
+  test.textureNum = -3;
+  if(g_normalOn){test.textureNum = -3;}
+  test.matrix.scale(0.25, 0.25, 0.25);
+  test.matrix.translate(-1, .5, -1.5);
+  test.render();
+
+  
   // Check the time at the end of the function, and show on web page
   var duration = performance.now() - startTime;
-  sendTextToHTML( "ms: " + Math.floor(duration) + " fps: " + Math.floor(10000/duration), "numdot" );
+  sendTextToHTML( "ms: " + Math.floor(duration) + " fps: " + Math.floor(1000/duration), "numdot" );
 }
 
 // Set the text of a HTML element
@@ -747,6 +872,7 @@ function skyboxAndFloor() {
   floor.matrix.translate(0.0, -0.75, 0.0);
   floor.matrix.scale(30, 0, 30);
   floor.matrix.translate(-0.1, 0, -0.1);
+  floor.normalMatrix.setInverseOf(floor.matrix).transpose();
   floor.render();
 
   // make skybox
@@ -778,6 +904,7 @@ function bee() {
   }
   body.matrix.translate(-0.30, -0.05, -0.17);
   body.matrix.scale(0.60, 0.35, 0.35);
+  body.normalMatrix.setInverseOf(body.matrix).transpose();
   body.render();
 
   //legs
@@ -790,6 +917,7 @@ function bee() {
   frontLeftLeg.matrix.translate( 0.20, -0.14,  0.08);
   frontLeftLeg.matrix.rotate(frontLeftSlider, 0, 0, 1);
   frontLeftLeg.matrix.scale(0.05, 0.12, 0.05);
+  frontLeftLeg.normalMatrix.setInverseOf(frontLeftLeg.matrix).transpose();
   frontLeftLeg.render();
 
   var frontRightLeg = new Cube();
@@ -800,6 +928,7 @@ function bee() {
   frontRightLeg.matrix.translate( 0.20, -0.14, -0.13);
   frontRightLeg.matrix.rotate(frontRightSlider, 0, 0, 1);
   frontRightLeg.matrix.scale(0.05, 0.12, 0.05);
+  frontRightLeg.normalMatrix.setInverseOf(frontRightLeg.matrix).transpose();
   frontRightLeg.render();
 
   var midLeftLeg = new Cube();
@@ -810,6 +939,7 @@ function bee() {
   midLeftLeg.matrix.translate( 0.00, -0.14,  0.08);
   midLeftLeg.matrix.rotate(midLeftSlider, 0, 0, 1);
   midLeftLeg.matrix.scale(0.05, 0.12, 0.05);
+  midLeftLeg.normalMatrix.setInverseOf(midLeftLeg.matrix).transpose();
   midLeftLeg.render();
 
   var midRightLeg = new Cube();
@@ -820,6 +950,7 @@ function bee() {
   midRightLeg.matrix.translate( 0.00, -0.14, -0.13);
   midRightLeg.matrix.rotate(midRightSlider, 0, 0, 1);
   midRightLeg.matrix.scale(0.05, 0.12, 0.05);
+  midRightLeg.normalMatrix.setInverseOf(midRightLeg.matrix).transpose();
   midRightLeg.render();
 
   var backRightLeg = new Cube();
@@ -830,6 +961,7 @@ function bee() {
   backRightLeg.matrix.translate(-0.20, -0.14, -0.13);
   backRightLeg.matrix.rotate(backRightSlider, 0, 0, 1);
   backRightLeg.matrix.scale(0.05, 0.12, 0.05);
+  backRightLeg.normalMatrix.setInverseOf(backRightLeg.matrix).transpose();
   backRightLeg.render();
 
   var backLeftLeg = new Cube();
@@ -840,6 +972,7 @@ function bee() {
   backLeftLeg.matrix.translate(-0.20, -0.14,  0.08);
   backLeftLeg.matrix.rotate(backLeftSlider, 0, 0, 1);
   backLeftLeg.matrix.scale(0.05, 0.12, 0.05);
+  backLeftLeg.normalMatrix.setInverseOf(backLeftLeg.matrix).transpose();
   backLeftLeg.render();
   
   // right.matrix.scale(0.30, 0.02, 0.125);
@@ -861,6 +994,7 @@ function bee() {
     wing.matrix.rotate(g_wingAngle * -zSide, 1, 0, 0);
     // 4. scale to slab
     wing.matrix.scale(WING_W, WING_T, WING_D);
+    wing.normalMatrix.setInverseOf(wing.matrix).transpose();
     wing.render();
   }
 

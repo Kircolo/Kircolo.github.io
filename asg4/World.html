@@ -14,21 +14,36 @@
       </div>
     </div>
     
-    <p>
-
     <p id = "numdot" > XXX </p>
     
-    <div class="row">
-      <div class="column">
-        <p>
-          <strong>Controls:</strong>
-        </p> 
-        <p>
-          X Camera Angle <input type="range" min="0" max="360" value="15" class="slider" id="angleSlideX">
-        <p>
-          Y Camera Angle <input type="range" min="0" max="360" value="15" class="slider" id="angleSlideY">
-      </div>
-    </div>
+
+    <p>
+      <strong>Controls:</strong>
+    </p>
+
+    <p>
+      Light X <input type="range" min="-250" max="250" value="0" class="slider" id="lightSlideX">
+      Light Y <input type="range" min="-250" max="250" value="100" class="slider" id="lightSlideY">
+      Light Z <input type="range" min="-250" max="250" value="-200" class="slider" id="lightSlideZ">
+      <button type="button" id="lightOn">On</button>
+      <button type="button" id="lightOff">Off</button>
+    </p> 
+
+    <p>
+      Magenta <input type="range" min="-250" max="250" value="100" class="slider" id="magentaSlide">
+      Animation: 
+      <button type="button" id="AnimationMagentaOn">On</button>
+      <button type="button" id="AnimationMagentaOff">Off</button>
+
+    </p>
+      Yellow <input type="range" min="-250" max="250" value="100" class="slider" id="yellowSlide">
+      Animation:
+      <button type="button" id="AnimationYellowOn">On</button>
+      <button type="button" id="AnimationYellowOff">Off</button>
+         
+    <p>
+      X Camera Angle <input type="range" min="0" max="360" value="15" class="slider" id="angleSlideX">
+      Y Camera Angle <input type="range" min="0" max="360" value="15" class="slider" id="angleSlideY">
 
     <p>
     Animation:
@@ -48,6 +63,7 @@
     <script src="Camera.js"></script>
     <script src="Circle.js"></script>
     <script src="Cube.js"></script>
+    <script src="Sphere.js"></script>
     <script src="World.js"></script>
   </body>
 </html>
