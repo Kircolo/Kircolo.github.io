@@ -1,3 +1,6 @@
+// Some ChatGPT was used to help format & structure this code and for 
+// some of the shape setup.
+
 import * as THREE from 'three';
 import { OrbitControls }  from 'three/addons/controls/OrbitControls.js';
 import { OBJLoader }      from 'three/addons/loaders/OBJLoader.js';
@@ -5,6 +8,7 @@ import { MTLLoader }      from 'three/addons/loaders/MTLLoader.js';
 import { GUI }            from 'three/addons/libs/lil-gui.module.min.js';
 
 function main() {
+
 // Renderer & Canvas
 const canvas   = document.querySelector('#c');
 const renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
@@ -67,12 +71,12 @@ camFolder.add(camHelper, 'min', 0.1, 50, 0.1)
 camFolder.add(camHelper, 'max', 0.1, 300, 0.1)
         .name('Camera Far')
         .onChange(updateCamera);
-camFolder.open();  // :contentReference[oaicite:5]{index=5}
+camFolder.open();
 
 // Scene
 const scene = new THREE.Scene();
 
-// — Skybox (equirectangular) —
+// — Skybox —
 {
     const loader = new THREE.TextureLoader();
     loader.load(
@@ -118,7 +122,7 @@ const scene = new THREE.Scene();
             .name('Ground Color');
     hemiFolder.add(hemiLight, 'intensity', 0, 5, 0.01)
             .name('Intensity');
-    hemiFolder.open();  // :contentReference[oaicite:6]{index=6}
+    hemiFolder.open();
 }
 
 // — Directional Light Folder —
@@ -147,7 +151,7 @@ let dirLight, dirLightHelper;
         .name('Target Y');
     folder.add(dirLight.target.position, 'z', -10, 10, 0.1)
         .name('Target Z');
-    folder.open();  // :contentReference[oaicite:7]{index=7}
+    folder.open();
 }
 
 // — Load X-Wing Model —
@@ -157,9 +161,9 @@ let dirLight, dirLightHelper;
     mtl.preload();
     const objLoader = new OBJLoader();
     objLoader.setMaterials(mtl);
-    // … inside your MTLLoader.load → OBJLoader.load callback …
+
     objLoader.load('textures/xwing.obj', (root) => {
-    // common setup
+    
     root.scale.setScalar(8);
     root.rotation.y = Math.PI / 2;  // nose toward +Z
     root.position.set(0, 2, -2);
@@ -172,17 +176,12 @@ let dirLight, dirLightHelper;
     const spotSpacing = wallCount * blockSize + gapBlocks * blockSize;
 
     for (let s = 0; s < spotCount; s++) {
-        // deep‐clone the loaded X-wing group
         const ship = root.clone(true);
         const centerX = (s - (spotCount - 1) / 2) * spotSpacing;
         ship.position.x = centerX;
         scene.add(ship);
     }
 
-    // // finally dispose the original template if you like:
-    // root.traverse(n => {
-    //     if (n.material) n.material = n.material.clone();
-    // });
     });
 
     });
@@ -215,8 +214,8 @@ let dirLight, dirLightHelper;
 
     // for each spot
     for (let s = 0; s < spotCount; s++) {
-    // compute this spot’s X-center offset
-    const centerX = (s - (spotCount - 1) / 2) * spotSpacing;
+
+        const centerX = (s - (spotCount - 1) / 2) * spotSpacing;
 
     // build walls at each height level
     for (let h = 0; h < wallHeight; h++) {
@@ -257,11 +256,10 @@ let dirLight, dirLightHelper;
 
     // Tower
 {
-    // 1) Create the cylinder geometry & material
-    const radiusTop     = .1;      // top radius
-    const radiusBottom  = 5;      // bottom radius
-    const height        = 22;      // total height
-    const radialSegments = 8;    // how smooth the roundness is
+    const radiusTop     = .1;
+    const radiusBottom  = 5;
+    const height        = 22;
+    const radialSegments = 8;
     const cylGeo = new THREE.CylinderGeometry(
     radiusTop,
     radiusBottom,
@@ -273,42 +271,59 @@ let dirLight, dirLightHelper;
     const cylMat = new THREE.MeshPhongMaterial({
         map: new THREE.TextureLoader().load('textures/obsidian.jpg'),
     });
-
     const cylinder = new THREE.Mesh(cylGeo, cylMat);
-
-    // 2) Position it in world space
-    //    Y should be height/2 so it sits on the ground plane
-    cylinder.position.set(
-    /* x: */  0,
-    /* y: */  height / 2,
-    /* z: */  -30
-    );
-
-    // (Optional) rotate if you want it lying on its side
-    // cylinder.rotation.z = Math.PI / 2;
-
-    // 3) Add to the scene
+    cylinder.position.set( 0, height / 2, -30);
     scene.add(cylinder);
 }
 let starMesh = null;
-    // — Load Star Model —
+let starLight   = null;
+let starLightHelper = null;
+    // — Star —
 {
     
     const mtlLoader = new MTLLoader();
     mtlLoader.load(
-        'textures/star.mtl',        // path to your .mtl
+        'textures/star.mtl', 
         (materials) => {
         materials.preload();
 
         const objLoader = new OBJLoader();
         objLoader.setMaterials(materials);
         objLoader.load(
-            'textures/star.obj',     // path to your .obj
+            'textures/star.obj',
             (star) => {
-            // tweak these to taste:
-            star.scale.setScalar(3);       // make it 3× bigger
-            star.position.set(0, 25, -30);   // lift up & move back
+            star.scale.setScalar(3);
+            star.position.set(0, 25, -30);
             starMesh = star;
+
+            starLight = new THREE.PointLight(0xffffff, 10, 100, 2);
+            starLight.position.set(0, 0, 0);       // centered on the star
+            starMesh.add(starLight);
+
+            starLightHelper = new THREE.PointLightHelper(starLight, 1);
+            starMesh.add(starLightHelper);
+
+            const starFolder = gui.addFolder('Star Light');
+            starFolder
+            .addColor(new ColorGUIHelper(starLight, 'color'), 'value')
+            .name('Color');
+            starFolder
+            .add(starLight, 'intensity', 0, 250, 0.1)
+            .name('Intensity');
+            starFolder
+            .add(starLight, 'distance', 0, 200, 1)
+            .name('Distance')
+            .onChange(() => starLightHelper.update());
+
+            // position sliders inside a sub-folder
+            const posF = starFolder.addFolder('Position');
+            ['x','y','z'].forEach((axis) => {
+            posF
+                .add(starLight.position, axis, -20, 20, 0.1)
+                .onChange(() => starLightHelper.update());
+            });
+            starFolder.open();
+            posF.open();
 
             scene.add(star);
             },
@@ -321,6 +336,75 @@ let starMesh = null;
     );
 }
 
+    // Light Sphere Scatter
+{
+  const lightCount = 30;
+  const planeSize  = 100;
+  const margin     = 10;
+  const range      = planeSize - margin * 2;
+  
+  for (let i = 0; i < lightCount; i++) {
+
+    const sphereGeo = new THREE.SphereGeometry(0.3, 12, 12);
+    const sphereMat = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+    const lamp = new THREE.Mesh(sphereGeo, sphereMat);
+    
+    const x = (Math.random() - 0.5) * range;
+    const z = (Math.random() - 0.5) * range;
+    lamp.position.set(x, 0.3, z);
+    scene.add(lamp);
+    
+    const pl = new THREE.PointLight(0xffffff, 1, 20, 2);
+    pl.position.set(0, 0, 0);
+    lamp.add(pl);
+    
+    lamp.add(pl);
+  }
+}
+
+    // Random Block Scatter
+{
+    {
+    const cubeCount = 50;
+    const planeSize  = 100;
+    const margin     = 10;
+    const range      = planeSize - margin * 2;
+
+    const loader = new THREE.TextureLoader();
+    const texturePaths = [
+        'textures/wood.jpg',
+        'textures/diamonds.jpg',
+        'textures/emeralds.jpg',
+        'textures/gold.jpg',
+    ];
+    const textures = texturePaths.map(path => {
+        const tx = loader.load(path);
+        tx.encoding  = THREE.sRGBEncoding;
+        tx.wrapS     = THREE.RepeatWrapping;
+        tx.wrapT     = THREE.RepeatWrapping;
+        tx.magFilter = THREE.NearestFilter;
+        return tx;
+    });
+
+    const cubeGeo = new THREE.BoxGeometry(1, 1, 1);
+
+    for (let i = 0; i < cubeCount; i++) {
+        // pick a random texture
+        const mat = new THREE.MeshPhongMaterial({
+        map: textures[Math.floor(Math.random() * textures.length)]
+        });
+        const cube = new THREE.Mesh(cubeGeo, mat);
+
+        const x = (Math.random() - 0.5) * range;
+        const z = (Math.random() - 0.5) * range;
+        cube.position.set(x, 0.5, z);
+        cube.rotation.y = Math.random() * Math.PI;
+
+        scene.add(cube);
+    }
+    }
+
+}
 
 // Resize + Render Loop
 function resizeRendererToDisplaySize(renderer) {
@@ -339,12 +423,14 @@ function render(time) {
     }
     
     if (starMesh) {
-        // rotate the star for a little animation
         starMesh.rotation.y = time * 0.75;
     }
 
     // update directional‐light helper so it follows target
     dirLightHelper.update();
+    if (starLightHelper) {
+        starLightHelper.update();
+    }
     renderer.render(scene, camera);
     requestAnimationFrame(render);
 }
